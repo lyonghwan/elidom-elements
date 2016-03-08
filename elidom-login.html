@@ -1,0 +1,271 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../gold-email-input/gold-email-input.html">
+<link rel="import" href="../iron-form/iron-form.html">
+<!--
+A material login form asking for login and password.
+
+Example:
+
+    <elidom-login title="Things System" success-route="/">
+      <img src="https://maps.gstatic.com/tactile/pane/default_geocode-1x.png"/>
+    </elidom-login>
+
+@demo demo/index.html
+-->
+<dom-module id="elidom-login">
+  <template>
+    <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      text-align: center;
+      margin: 0 auto;
+      height: 100%;
+      width: 98%;
+    }
+    
+    :host > h3 {
+      margin-top: 5px;
+    }
+    
+    :host::content img {
+      border-radius: 50%;
+    }
+    
+    :host paper-input {
+      margin-left: auto;
+      margin-right: auto;
+      width: 90%;
+    }
+    
+    :host paper-material {
+      padding: 15px;
+    }
+    
+    #resetbutton {
+      margin-top: 10px;
+      width: 90%;
+      background: #4285f4;
+      color: white;
+    }
+
+    #submitButton {
+      margin-top: 10px;
+      width: 90%;
+      background: #4285f4;
+      color: white;
+    }
+    </style>
+    <paper-material elevation="[[elevation]]">
+      <h3>[[title]]</h3>
+      <content select="[avatar]"></content>
+      <form is="iron-form" 
+            id="loginForm" 
+            headers = "[[headers]]"
+            action="[[action]]" 
+            contentType="[[contentType]]" method="[[method]]">
+        <paper-input  id="username"
+                      name="emial" 
+                      type="text" 
+                      label="[[usernameInputLabel]]" 
+                      value="{{username}}" 
+                      pattern="[[usernameValidationPattern]]" 
+                      error-message="[[usernameErrorMessage]]"
+                      required
+                      auto-validate>
+        </paper-input>
+        <paper-input  id="password"
+                      name="password"
+                      type="password" 
+                      label="[[passwordInputLabel]]"
+                      value="{{password}}" 
+                      pattern="[[passwordValidationPattern]]" 
+                      error-message="[[passwordErrorMessage]]"
+                      required
+                      auto-validate>
+        </paper-input>
+        <paper-button id="resetbutton" raised on-click="resetHandler">
+          [[resetLabel]]
+        </paper-button>
+        <paper-button id="submitButton" raised disabled on-click="submitHandler">
+          <paper-spinner id="spinner" hidden></paper-spinner>[[submitLabel]]
+        </paper-button>
+      </form>
+    </paper-material>
+  </template>
+  <script>
+  Polymer({
+    is: 'elidom-login',
+    properties: {
+      /**
+       * [elevation(음영높이) for login form]
+       * @type {Number}
+       */
+      elevation: {
+        type: Number,
+        value: 4
+      },
+      /**
+       * Label for the title
+       * @type {string}
+       * @default Login
+       */
+      title: {
+        type: String,
+        value: 'Login'
+      },
+      /**
+       * successRouter when login success will routing to the page
+       * @type {String}
+       */
+      successRouter:{
+        type:String,
+        value:'/'
+      },
+      /**
+       * Label for the username input.
+       * @type {string}
+       */
+      usernameInputLabel: {
+        type: String,
+        value: 'Username'
+      },
+      /**
+       * Pattern used to validate username,  ex: '^[a-zA-Z0-9]+$'
+       * @type {string}
+       */
+      usernameValidationPattern: {
+        type: String
+      },
+      /**
+       * Error message displayed if `usernameValidationPattern` is not matched.
+       * @type {string}
+       */
+      usernameErrorMessage: {
+        type: String,
+        value: 'letters and numbers only'
+      },
+
+      /**
+       * Label for the password input.
+       * @type {string}
+       */
+      passwordInputLabel: {
+        type: String,
+        value: 'Password'
+      },
+      /**
+       * Pattern used to validate password, ex: '^[a-zA-Z0-9]+$'
+       * @type {string}
+       */
+      passwordValidationPattern: {
+        type: String
+      },
+      /**
+       * Error message displayed if `passwordValidationPattern` is not matched.
+       * @type {string}
+       */
+      passwordErrorMessage: {
+        type: Object,
+        value :'letters and numbers only'
+      },
+
+      /**
+       * [headers description]
+       * @type {Object}
+       */
+      headers : {
+        type:Object
+      },
+
+      /**
+       * [action description]
+       * @type {Object}
+       */
+      action:{
+        type:String,
+        value : 'http://192.168.35.229:9004/rest/users/'
+      },
+      /**
+       * [contentType description]
+       * @type {Object}
+       */
+      contentType:{
+        type:String,
+        value:'application/x-www-form-urlencoded'
+      },
+      /**
+       * 
+       */
+      method :{
+        type : String,
+        method : 'post'
+      },
+      /**
+       * Label for the submit button
+       * @type {string}
+       * @default Submit
+       */
+      submitLabel: {
+        type: String,
+        value: 'Submit'
+      },
+
+      /**
+       * Cancel for the login form
+       * @type {Object}
+       * @default Cancel
+       */
+      resetLabel: {
+        type: String,
+        value: 'Reset'
+      }
+    },
+    // Element Lifecycle
+
+    ready: function() {},
+
+    attached: function() {},
+
+    detached: function() {},
+
+    // Element Behavior
+    behaviors: [
+    ],
+    // Event listener
+    listeners : {
+      'iron-form-submit': 'afterFormSubmit',
+      'change' : 'onFormChange'
+    },
+
+    onFormChange: function(event) {
+      // Validate the entire form to see if we should enable the `Submit` button.
+      submitButton.disabled = !loginForm.validate();
+    },
+
+    submitHandler : function (event) {
+      spinner.active = true;
+      spinner.hidden = false;
+      submitButton.disabled = true;
+      loginForm.submit();
+    },
+    
+    resetHandler : function (event) {
+      loginForm.reset();
+    },
+
+    afterFormSubmit : function(event){
+      spinner.active = false;
+      spinner.hidden = true;
+      submitButton.disabled = false;
+      page(this.successRouter);
+    }
+
+  });
+  </script>
+</dom-module>
+
